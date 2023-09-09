@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create EC2
+
+Resources:
+#EC2インスタンス
+  lalalaEC2Instance1a:
+    Type: AWS::EC2::Instance
+    Properties:
+      IamInstanceProfile: !ImportValue IAMInstanceProfileId
+      ImageId: ami-079a2a9ac6ed876fc
+      InstanceType: t2.micro
+      KeyName: "First-key"
+      NetworkInterfaces:
+        - SubnetId: !ImportValue PublicSubnet1aId
+          GroupSet:
+            - !Ref lalalaSecurityGroupEC2
+          AssociatePublicIpAddress: true
+          DeviceIndex: 0
+      Tags:
+        - Key: Name
+          Value: lalala-ec2-1a
+
+#セキュリティグループ(EC2)
+  lalalaSecurityGroupEC2:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security Group for EC2" # Required
+      SecurityGroupIngress: #インバウンドルール
+        - IpProtocol: tcp #SSH
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp #HTTP
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp #Rails
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: lalala-sg-ec2
+      VpcId: !ImportValue VPCId
+
+Outputs:
+  EC2Instance1aId:
+    Value: !Ref lalalaEC2Instance1a
+    Export:
+      Name: EC2Instance1aId
+
+  SecurityGroupEC2Id:
+    Value: !Ref lalalaSecurityGroupEC2
+    Export:
+      Name: SecurityGroupEC2Id
