@@ -21,7 +21,9 @@ Resources:
   lalalaPublicSubnet1a:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: "ap-northeast-1a"
+      AvailabilityZone: !Select #!Selectでリストから選択
+        - 0
+        - Fn::GetAZs: !Ref AWS::Region
       CidrBlock: "10.0.10.0/24"
       MapPublicIpOnLaunch: true
       Tags:
@@ -32,7 +34,9 @@ Resources:
   lalalaPublicSubnet1c:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: "ap-northeast-1c"
+      AvailabilityZone: !Select #!Selectでリストから選択
+        - 1
+        - Fn::GetAZs: !Ref AWS::Region
       CidrBlock: "10.0.20.0/24"
       MapPublicIpOnLaunch: true
       Tags:
@@ -46,7 +50,9 @@ Resources:
   lalalaPrivateSubnet1a:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: "ap-northeast-1a"
+      AvailabilityZone: !Select #!Selectでリストから選択
+        - 0
+        - Fn::GetAZs: !Ref AWS::Region
       CidrBlock: "10.0.30.0/24"
       MapPublicIpOnLaunch: false
       Tags:
@@ -57,7 +63,9 @@ Resources:
   lalalaPrivateSubnet1c:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: "ap-northeast-1c"
+      AvailabilityZone: !Select #!Selectでリストから選択
+        - 1
+        - Fn::GetAZs: !Ref AWS::Region
       CidrBlock: "10.0.40.0/24"
       MapPublicIpOnLaunch: false
       Tags:
@@ -119,6 +127,11 @@ Outputs:
     Value: !Ref lalalaVPC
     Export:
       Name: VPCId
+
+  AZ:
+    Value: !GetAtt lalalaPrivateSubnet1a.AvailabilityZone
+    Export:
+      Name: AZ
 
   PublicSubnet1aId:
     Value: !Ref lalalaPublicSubnet1a
