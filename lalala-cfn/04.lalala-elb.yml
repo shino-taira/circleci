@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create ELB
+
+Resources:
+#ELB(ALB)
+  lalalaELB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Scheme: internet-facing #内部向けかインターネット向けか
+      SecurityGroups:
+        - !ImportValue SecurityGroupEC2Id
+      Subnets:
+        - !ImportValue PublicSubnet1aId
+        - !ImportValue PublicSubnet1cId
+      Tags:
+        - Key: Name
+          Value: lalala-elb
+      Type: application
+
+#ELBターゲットグループ
+  lalalaELBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port: 80
+      Protocol: HTTP
+      ProtocolVersion: HTTP1
+      Tags:
+        - Key: Name
+          Value: lalala-elb-tg
+      TargetType: instance
+      Targets:
+        - Id: !ImportValue EC2Instance1aId
+      VpcId: !ImportValue VPCId
+
+#ELBリスナー
+  lalalaELBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions: # Required
+        - TargetGroupArn: !Ref lalalaELBTargetGroup
+          Type: forward #forwardは指定されたターゲットグループにリクエストを送信
+      LoadBalancerArn: !Ref lalalaELB # Required
+      Port: 80
+      Protocol: HTTP
+
+Outputs:
+  ELBId:
+    Value: !Ref lalalaELB
+    Export:
+      Name: ELBId

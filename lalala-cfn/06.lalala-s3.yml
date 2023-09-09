@@ -1,0 +1,8 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create S3
+
+Resources:
+  lalalaS3:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: lalala-s3-aloha #グローバルで一意、小文字

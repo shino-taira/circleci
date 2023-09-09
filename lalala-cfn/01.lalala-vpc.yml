@@ -1,0 +1,141 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create VPC
+
+Resources:
+#--------------------------------
+# VPC
+#--------------------------------
+  lalalaVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: lalala-vpc
+
+#--------------------------------------------
+# パブリックサブネット(ELB作成のため2つ必要 1a/1c)
+#--------------------------------------------
+  lalalaPublicSubnet1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: "ap-northeast-1a"
+      CidrBlock: "10.0.10.0/24"
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: lalala-public-subnet-1a
+      VpcId: !Ref lalalaVPC # Required
+
+  lalalaPublicSubnet1c:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: "ap-northeast-1c"
+      CidrBlock: "10.0.20.0/24"
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: lalala-public-subnet-1c
+      VpcId: !Ref lalalaVPC # Required
+
+#------------------------------------------------------------
+# プライベートサブネット(RDSサブネットグループ作成のため2つ必要 1a/1c)
+#------------------------------------------------------------
+  lalalaPrivateSubnet1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: "ap-northeast-1a"
+      CidrBlock: "10.0.30.0/24"
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: lalala-private-subnet-1a
+      VpcId: !Ref lalalaVPC # Required
+
+  lalalaPrivateSubnet1c:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: "ap-northeast-1c"
+      CidrBlock: "10.0.40.0/24"
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: lalala-private-subnet-1c
+      VpcId: !Ref lalalaVPC # Required
+
+#---------------------------
+# インターネットゲートウェイ
+#---------------------------
+  lalalaIGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: lalala-igw
+
+#インターネットゲートウェイをVPCにアタッチ
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref lalalaIGW
+      VpcId: !Ref lalalaVPC # Required
+
+#--------------------------------------
+# パブリックサブネットのルートテーブルを作成
+#--------------------------------------
+  lalalaRouteTablePublic:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags:
+        - Key: Name
+          Value: lalala-rt-public
+      VpcId: !Ref lalalaVPC # Required
+
+#ルート先にIGWを定義
+  lalalaRoutePublic:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref lalalaIGW
+      RouteTableId: !Ref lalalaRouteTablePublic # Required
+
+#ルートテーブルをパブリックサブネットに関連付け
+  PublicSubnetRouteTableAssociation1a:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref lalalaRouteTablePublic # Required
+      SubnetId: !Ref lalalaPublicSubnet1a # Required
+
+  PublicSubnetRouteTableAssociation1c:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref lalalaRouteTablePublic # Required
+      SubnetId: !Ref lalalaPublicSubnet1c # Required
+
+Outputs:
+  VPCId:
+    Value: !Ref lalalaVPC
+    Export:
+      Name: VPCId
+
+  PublicSubnet1aId:
+    Value: !Ref lalalaPublicSubnet1a
+    Export:
+      Name: PublicSubnet1aId
+
+  PublicSubnet1cId:
+    Value: !Ref lalalaPublicSubnet1c
+    Export:
+      Name: PublicSubnet1cId
+
+  PrivateSubnet1aId:
+    Value: !Ref lalalaPrivateSubnet1a
+    Export:
+      Name: PrivateSubnet1aId
+
+  PrivateSubnet1cId:
+    Value: !Ref lalalaPrivateSubnet1c
+    Export:
+      Name: PrivateSubnet1cId

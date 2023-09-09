@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create IAM Role
+
+Resources:
+#IAMロール
+  lalalaIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+      Path: "/"
+      RoleName: lalala-iam-role
+
+#IAMポリシー
+  lalalaIAMPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Resource: "*"
+            Action:
+              - ec2:*
+      PolicyName: lalala-iam-policy # Required
+      Roles:
+        - !Ref lalalaIAMRole
+
+#IAMインスタンスプロファイル
+  lalalaIAMInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: lalala-iam-instance-profile
+      Path: "/"
+      Roles: # Required
+        - !Ref lalalaIAMRole
+
+Outputs:
+  IAMRoleId:
+    Value: !Ref lalalaIAMRole
+    Export:
+      Name: IAMRoleId
+
+  IAMInstanceProfileId:
+    Value: !Ref lalalaIAMInstanceProfile
+    Export:
+      Name: IAMInstanceProfileId
